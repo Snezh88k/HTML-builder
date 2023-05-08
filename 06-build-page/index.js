@@ -3,18 +3,15 @@ import path from "node:path";
 import { mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import { readdir } from "node:fs/promises";
 import * as fs from "fs";
+import { pipeline } from "node:stream/promises";
 
 const dirname = path.join(".", "/06-build-page");
 
 //Блок - создание стилей--------------------------------------------------------
 
-mkdir(path.join(dirname, "/project-dist"), { recursive: true }, (err) => {
+await mkdir(path.join(dirname, "/project-dist"), { recursive: true }, (err) => {
   if (err) throw err;
 });
-
-let streamWrite = fs.createWriteStream(
-  path.join(dirname, "/project-dist", "style.css")
-);
 
 try {
   const files = await readdir(path.join(dirname, "styles"), {
@@ -22,12 +19,12 @@ try {
   });
   for (const file of files) {
     if (file.isFile() && path.extname(file.name) === ".css") {
-      let streamRead = fs.createReadStream(
-        path.join(dirname, "styles", file.name),
-        { encoding: "utf-8" }
+      await pipeline(
+        fs.createReadStream(path.join(dirname, "styles", file.name), {
+          encoding: "utf-8",
+        }),
+        fs.createWriteStream(path.join(dirname, "/project-dist", "style.css"))
       );
-
-      streamRead.pipe(streamWrite);
     }
   }
 } catch (err) {
@@ -68,7 +65,7 @@ const copyFolder = async (folder) => {
           );
         } catch {}
       } else {
-        mkdir(
+        await mkdir(
           path.join(dirname, "/project-dist", folder, fold.name),
           { recursive: true },
           (err) => {
