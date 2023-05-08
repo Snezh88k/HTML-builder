@@ -13,6 +13,15 @@ await mkdir(path.join(dirname, "/project-dist"), { recursive: true }, (err) => {
   if (err) throw err;
 });
 
+await writeFile(
+  path.join(dirname, "/project-dist", "style.css"),
+  "",
+  (error) => {
+    if (error) throw error;
+    console.log("Данные успешно записаны записать файл");
+  }
+);
+
 try {
   const files = await readdir(path.join(dirname, "styles"), {
     withFileTypes: true,
@@ -23,7 +32,9 @@ try {
         fs.createReadStream(path.join(dirname, "styles", file.name), {
           encoding: "utf-8",
         }),
-        fs.createWriteStream(path.join(dirname, "/project-dist", "style.css"))
+        fs.createWriteStream(path.join(dirname, "/project-dist", "style.css"), {
+          flags: "a",
+        })
       );
     }
   }
